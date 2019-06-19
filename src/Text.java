@@ -1,7 +1,5 @@
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Text {
 
@@ -40,11 +38,7 @@ public class Text {
 	public boolean hasTag(String tagName) {
 		return tags.containsKey(tagName);
 	}
-	
-	public List<String> getTagNames() {
-		return tags.keySet().stream().collect(Collectors.toList());
-	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("[%s] >> %s\n", speaker, message);

@@ -17,7 +17,6 @@ public class Main {
 		File f = new File("dialogue/test.diag");
 		
 		Map<String, Dialogue> dialogueTree = new HashMap<>();
-		
 		try {
 			BufferedReader r = new BufferedReader(new FileReader(f));
 			String line = r.readLine();
@@ -37,6 +36,7 @@ public class Main {
 				//LOAD "CHECKPOINT"
 				if(line.startsWith(PARAGRAPH)) {
 					if(current != null) {
+						current.opt();
 						dialogueTree.put(name, current);
 					}
 					
@@ -113,13 +113,19 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
+
+
+
+
+
+
 		Scanner s = new Scanner(System.in);
 		Dialogue d = dialogueTree.get("§Start");
+
 		while(d != null) {
 			
 			System.out.println(d);	//PRINT DIALOGUE AND POSSIBLE ANSWERS
-			
 			if(d.getAnswers().size() == 0) {
 				
 				//JUMP TO NEXT D

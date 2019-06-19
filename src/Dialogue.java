@@ -10,7 +10,11 @@ public class Dialogue {
 		this.npcDialogue = new ArrayList<>();
 		this.playerDialogue = new ArrayList<>();
 	}
-	
+
+	public void opt() {
+		((ArrayList<Text>) npcDialogue).trimToSize();
+		((ArrayList<Text>) playerDialogue).trimToSize();
+	}
 	
 	public void addText(Text t) {
 		npcDialogue.add(t);
@@ -37,7 +41,7 @@ public class Dialogue {
 			if(npcDialogue.get(i).hasTag("followUP")) return npcDialogue.get(i).getTagContent("followUP");
 		}
 		
-		return "§End";
+		return null;
 	}
 	
 	@Override 
