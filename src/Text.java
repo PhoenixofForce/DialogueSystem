@@ -41,7 +41,7 @@ public class Text {
 
 	@Override
 	public String toString() {
-		return String.format("[%s] >> %s\n", speaker, message);
+		return String.format("[%s] >> %s", speaker, message);
 	}
 	
 	@Override

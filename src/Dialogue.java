@@ -1,3 +1,7 @@
+import script.Parser;
+import script.TagHandler;
+import script.Tree;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,16 +38,58 @@ public class Dialogue {
 	 * @param a
 	 * @return
 	 */
-	public String getFollowUp(Text a) {
-		if(a != null && a.hasTag("followUP")) return a.getTagContent("followUP");
+	public String getFollowUp(TagHandler th, Text a) {
+		if(a != null && a.hasTag("followUP")) {
+			if(a.hasTag("onSpeak")) {
+				Tree tree = Parser.loadScript(Parser.COMMAND_BLOCK, a.getTagContent("onSpeak"));
+				tree.get(th);
+			}
+
+			return a.getTagContent("followUP");
+		}
 		
-			for(int i = 0; i < npcDialogue.size(); i++) {
+		for(int i = 0; i < npcDialogue.size(); i++) {
 			if(npcDialogue.get(i).hasTag("followUP")) return npcDialogue.get(i).getTagContent("followUP");
 		}
 		
 		return null;
 	}
-	
+
+	public String buildText(TagHandler th) {
+		String out = "";
+
+		for(int i = 0; i < npcDialogue.size(); i++) {
+			Text t = npcDialogue.get(i);
+
+			if(t.hasTag("condition")) {
+				Tree tree = Parser.loadScript(Parser.BOOLEAN, t.getTagContent("condition"));
+
+				if(!(boolean) tree.get(th)) continue;
+			}
+
+			if(t.hasTag("onSpeak")) {
+				Tree tree = Parser.loadScript(Parser.COMMAND_BLOCK, t.getTagContent("onSpeak"));
+				tree.get(th);
+			}
+
+			out += t.toString() + "\n";
+		}
+
+		for(int i = 0; i < playerDialogue.size(); i++) {
+			Text t = playerDialogue.get(i);
+
+			if(t.hasTag("condition")) {
+				Tree tree = Parser.loadScript(Parser.BOOLEAN, t.getTagContent("condition"));
+
+				if(!(boolean) tree.get(th)) continue;
+			}
+
+			out += "[" + i + "] " + t.getMessage() + (i == playerDialogue.size()-1? "": "\n");
+		}
+
+		return out;
+	}
+
 	@Override 
 	public String toString() {
 		String out = "";

@@ -1,3 +1,7 @@
+import script.Parser;
+import script.TagHandler;
+import script.Tree;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -13,7 +17,12 @@ public class Main {
 	public static final String TAG_START_STRING = "[tag";
 	
 	public static void main(String[] args) {
-	
+
+		TagHandler th = new TagHandler();
+
+
+
+
 		File f = new File("dialogue/test.diag");
 		
 		Map<String, Dialogue> dialogueTree = new HashMap<>();
@@ -26,7 +35,12 @@ public class Main {
 			
 			//PARSE PRE TAGS
 			while(line.startsWith(TAG_START_STRING)) {
-				
+				String tagType = line.split(";")[1].trim();
+				String tagContent = line.substring(line.indexOf(tagType) + tagType.length() + 1);
+				tagContent = tagContent.substring(0, tagContent.length()-1).trim();
+
+				Parser.loadScript(Parser.COMMAND_BLOCK, tagContent).get(th);
+
 				line = r.readLine();
 			}
 			
@@ -58,8 +72,8 @@ public class Main {
 					String[] tags = line.split(TAG_START);
 					for(int i = 1; i < tags.length; i++) {
 						String tagType = tags[i].split(";")[1].trim();
-						String tagContent = tags[i].split(";")[2].trim();
-						tagContent = tagContent.substring(0, tagContent.length()-1);
+						String tagContent = tags[i].substring(tags[i].indexOf(tagType) + tagType.length() + 1);
+						tagContent = tagContent.substring(0, tagContent.length()-1).trim();
 					
 						t.addTag(tagType, tagContent);
 					}
@@ -75,8 +89,8 @@ public class Main {
 					String[] tags = line.split(TAG_START);
 					for(int i = 1; i < tags.length; i++) {
 						String tagType = tags[i].split(";")[1].trim();
-						String tagContent = tags[i].split(";")[2].trim();
-						tagContent = tagContent.substring(0, tagContent.length()-1);
+						String tagContent = tags[i].substring(tags[i].indexOf(tagType) + tagType.length() + 1);
+						tagContent = tagContent.substring(0, tagContent.length()-1).trim();
 					
 						t.addTag(tagType, tagContent);
 					}
@@ -96,8 +110,8 @@ public class Main {
 					String[] tags = line.split(TAG_START);
 					for(int i = 1; i < tags.length; i++) {
 						String tagType = tags[i].split(";")[1].trim();
-						String tagContent = tags[i].split(";")[2].trim();
-						tagContent = tagContent.substring(0, tagContent.length()-1);
+						String tagContent = tags[i].substring(tags[i].indexOf(tagType) + tagType.length() + 1);
+						tagContent = tagContent.substring(0, tagContent.length()-1).trim();
 					
 						t.addTag(tagType, tagContent);
 					}
@@ -124,21 +138,21 @@ public class Main {
 		Dialogue d = dialogueTree.get("§Start");
 
 		while(d != null) {
-			
-			System.out.println(d);	//PRINT DIALOGUE AND POSSIBLE ANSWERS
+
+			System.out.println(d.buildText(th));	//PRINT DIALOGUE AND POSSIBLE ANSWERS
 			if(d.getAnswers().size() == 0) {
-				
+
 				//JUMP TO NEXT D
-				String st = d.getFollowUp(null);
-				d = dialogueTree.get(st);	
+				String st = d.getFollowUp(th, null);
+				d = dialogueTree.get(st);
 				continue;
 			}
-			
+
 			//DO ANSWER
 			int i = s.nextInt();
-			d = dialogueTree.get(d.getFollowUp(d.getAnswers().get(i)));
+			d = dialogueTree.get(d.getFollowUp(th, d.getAnswers().get(i)));
 		}
-		
+
 		System.out.println("[Der Dialog ist vorbei]");
 		s.close();
 	}

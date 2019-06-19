@@ -1,32 +1,20 @@
-[tag; something; TODO0]
-[tag; something; TODO1]
-[tag; something; TODO2]
-[tag; something; TODO3]
-[tag; something; TODO4]
 §Start
-Unbekannter:Hi.
+Klaus:Hi.[tag; condition; #askedKlaus]
+Unbekannter:Hi.[tag; condition; (1-#askedKlaus)]
 >Wer bist du?[tag; followUP; §Name]
->Weisst du...[tag; followUP; §Frage]
+>Wo Tom ist?[tag; followUP; §A2][tag; onSpeak; #tomFound=1;]
 >Bye[tag; followUP; §End]
 
 §Name
-Klaus:Ich bin hier der Chef. Klaus mein Name.[tag; followUP; §Start]
-
-§Frage
->Wo die Toilette ist?[tag; followUP; §A1]
->Wo Tom ist?[tag; followUP; §A2][tag; startQuest; Die Suche Nach Tom]
->Wie spaet es ist?[tag; followUP; §A3]
->[Zurueck][tag; followUP; §Start]
-
-§A1
-Klaus:Vorne links.[tag; followUP; §Start]
+Klaus:Ich bin hier der Chef. Klaus mein Name.[tag; followUP; §Start][tag; onSpeak; #askedKlaus=1;]
 
 §A2
-Klaus:Hier ist er doch.
+Klaus:Hier ist er doch.[tag; condition; #askedKlaus]
+Unbekannter:Hier ist er doch.[tag; condition; (1-#askedKlaus)]
 Tom:Hi[tag; followUP; §Start]
 
-§A3
-Klaus:11:30[tag; followUP; §Start]
 
 §End
-Klaus:Ok, bis spaeter.
+Klaus:Ok, bis spaeter.[tag; condition; #askedKlaus]
+Unbekannter:Ok, bis spaeter.[tag; condition; (1-#askedKlaus)]
+Tom:Tschau[tag; condition; #tomFound]
