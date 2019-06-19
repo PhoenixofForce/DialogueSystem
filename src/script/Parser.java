@@ -19,10 +19,17 @@ public class Parser {
 	public static final char COMMAND = 'δ';
 	public static final char COMMAND_BLOCK = 'ε';
 	public static final char COMMAND_BLOCK_NON_NULL = 'ζ';
+	public static final char STRING = 'ϰ';
 
 	static {
 		//Allowed replacements:
 		List<Replacement> replacements = new ArrayList<>();
+
+		replacements.add(new Replacement(STRING, "\"" + VAR + "\"", 1, (t, g)->t.getChild(0).get(g), true));
+		replacements.add(new Replacement(STRING, "$" + VAR, 1, (t, g)->g.getString((String) t.getChild(0).get(g)), false));
+		replacements.add(new Replacement(STRING,  "(" + STRING + "+" + STRING + ")", 2, (t, g)->t.getChild(0).get(g) +(String) t.getChild(1).get(g), true));
+		replacements.add(new Replacement(STRING,  "~" + NUMBER, 1, (t, g)->t.getChild(0).get(g), true));
+
 		replacements.add(new Replacement(BOOLEAN, "!" + BOOLEAN, 1, (t, g) -> !(boolean) t.getChild(0).get(g), true));
 		replacements.add(new Replacement(BOOLEAN, "(" + BOOLEAN + ")", 1, (t, g) -> t.getChild(0).get(g), true));
 		replacements.add(new Replacement(BOOLEAN, "(" + BOOLEAN + "||" + BOOLEAN + ")", 2, (t, g) -> ((boolean) t.getChild(0).get(g)) || ((boolean) t.getChild(1).get(g)), true));
@@ -37,6 +44,8 @@ public class Parser {
 		replacements.add(new Replacement(BOOLEAN, NUMBER + "<=" + NUMBER, 2, (t, g) -> (Integer) t.getChild(0).get(g) <= (Integer) t.getChild(1).get(g), true));
 		replacements.add(new Replacement(BOOLEAN, NUMBER + ">=" + NUMBER, 2, (t, g) -> (Integer) t.getChild(0).get(g) >= (Integer) t.getChild(1).get(g), true));
 		replacements.add(new Replacement(BOOLEAN, NUMBER + "==" + NUMBER, 2, (t, g) -> t.getChild(0).get(g) == t.getChild(1).get(g), true));
+		replacements.add(new Replacement(BOOLEAN, STRING + "==" + STRING, 2, (t, g) -> t.getChild(0).get(g).equals(""+t.getChild(1).get(g)), true));
+
 
 		for (final char c : "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789".toCharArray()) {
 			replacements.add(new Replacement(VAR, "" + c, 0, (t, g) -> "" + c, true));
@@ -47,15 +56,28 @@ public class Parser {
 			replacements.add(new Replacement(NUMBER_, "" + c, 0, (t, g) -> "" + c, true));
 			replacements.add(new Replacement(NUMBER_, c + "" + VAR, 1, (t, g) -> c + ((String) t.getChild(0).get(g)), true));
 		}
-		replacements.add(new Replacement(NUMBER, "#" + VAR, 1, (t, g) -> g.getValue((String) t.getChild(0).get(g)), false));
+		replacements.add(new Replacement(NUMBER, "#" + VAR, 1, (t, g) -> g.getInt((String) t.getChild(0).get(g)), false));
 		replacements.add(new Replacement(NUMBER, "" + NUMBER_, 1, (t, g) -> Integer.valueOf((String) t.getChild(0).get(g)), true));
 		replacements.add(new Replacement(NUMBER, "(" + NUMBER + "+" + NUMBER + ")", 2, (t, g) -> (int) t.getChild(0).get(g) + (int) t.getChild(1).get(g), true));
 		replacements.add(new Replacement(NUMBER, "(" + NUMBER + "-" + NUMBER + ")", 2, (t, g) -> (int) t.getChild(0).get(g) - (int) t.getChild(1).get(g), true));
 		replacements.add(new Replacement(NUMBER, "(" + NUMBER + "*" + NUMBER + ")", 2, (t, g) -> (int) t.getChild(0).get(g) * (int) t.getChild(1).get(g), true));
 		replacements.add(new Replacement(NUMBER, "(" + NUMBER + "/" + NUMBER + ")", 2, (t, g) -> (int) t.getChild(0).get(g) / (int) t.getChild(1).get(g), true));
+		replacements.add(new Replacement(NUMBER,  "~" + STRING, 1, (t, g)-> {
+			try {
+				int i = Integer.parseInt(""+t.getChild(0).get(g));
+				return i;
+			} catch(Exception e) {
+				e.printStackTrace();
+				return 0;
+			}
+		}, true));
 
 		replacements.add(new Replacement(COMMAND, "#" + VAR + "=" + NUMBER + ";", 2, (t, g) -> {
 			g.setValue((String) t.getChild(0).get(g), (int) t.getChild(1).get(g));
+			return null;
+		}, false));
+		replacements.add(new Replacement(COMMAND, "$" + VAR + "=" + STRING + ";", 2, (t, g) -> {
+			g.setValue((String) t.getChild(0).get(g), ""+t.getChild(1).get(g));
 			return null;
 		}, false));
 		replacements.add(new Replacement(COMMAND, "if(" + BOOLEAN + "){" + COMMAND_BLOCK + "}", 2, (t, g) -> {

@@ -72,7 +72,12 @@ public class Dialogue {
 				tree.get(th);
 			}
 
-			out += t.toString() + "\n";
+			String name = t.getSpeaker();
+			if(name.startsWith("$")) name = th.getString(name.substring(1));
+
+			String message = t.getMessage();
+
+			out += "[" + name + "] >> " + message + "\n";
 		}
 
 		for(int i = 0; i < playerDialogue.size(); i++) {

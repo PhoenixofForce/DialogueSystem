@@ -20,9 +20,6 @@ public class Main {
 
 		TagHandler th = new TagHandler();
 
-
-
-
 		File f = new File("dialogue/test.diag");
 		
 		Map<String, Dialogue> dialogueTree = new HashMap<>();
@@ -43,7 +40,8 @@ public class Main {
 
 				line = r.readLine();
 			}
-			
+
+
 			//PARSE DIALOGUE
 			while(line != null) {
 				
