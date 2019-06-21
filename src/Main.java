@@ -1,11 +1,12 @@
+import dialogue.Dialogue;
+import dialogue.Text;
+import quest.Objectiv;
+import quest.Quest;
+import quest.Reward;
 import script.Parser;
 import script.TagHandler;
-import script.Tree;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class Main {
@@ -19,6 +20,88 @@ public class Main {
 	public static void main(String[] args) {
 
 		TagHandler th = new TagHandler();
+
+		File q = new File("dialogue/test.quest");
+		Map<String, Quest> questList = new HashMap<>();
+		try {
+			BufferedReader r = new BufferedReader(new FileReader(q));
+			String line = r.readLine();
+
+			Quest current = null;
+			while(line != null) {
+				while(line.length() == 0)line = r.readLine();
+
+				if(line.startsWith(PARAGRAPH)) {
+					if(current != null) {
+						current.opt();
+						questList.put(current.getName(), current);
+					}
+
+					current = new Quest(Integer.parseInt(line.split("-")[0].substring(1)), line.split("-")[1]);
+				}
+
+				else if(line.startsWith("rewardCount")) {
+					Reward rew = current.getReward(Integer.parseInt(line.split(":")[0].substring(11)));
+
+					boolean isNew = rew == null;
+					if(isNew) rew = new Reward("", 0);
+
+					rew.setCount(Integer.parseInt(line.split(":")[1]));
+					if(isNew) current.addReward(rew);
+				}
+
+				else if(line.startsWith("reward")) {
+					Reward rew = current.getReward(Integer.parseInt(line.split(":")[0].substring(6)));
+
+					boolean isNew = rew == null;
+					if(isNew) rew = new Reward("", 0);
+
+					rew.setSpec(line.split(":")[1]);
+					if(isNew) current.addReward(rew);
+				}
+
+				else if(line.startsWith("objectivCount")) {
+					Objectiv rew = current.getObjectiv(Integer.parseInt(line.split(":")[0].substring(13)));
+
+					boolean isNew = rew == null;
+					if(isNew) rew = new Objectiv("", 0);
+
+					rew.setCount(Integer.parseInt(line.split(":")[1]));
+					if(isNew) current.addObjectiv(rew);
+				}
+
+				else if(line.startsWith("objectiv")) {
+					Objectiv rew = current.getObjectiv(Integer.parseInt(line.split(":")[0].substring(8)));
+
+					boolean isNew = rew == null;
+					if(isNew) rew = new Objectiv("", 0);
+
+					rew.setSpec(line.split(":")[1]);
+					if(isNew) current.addObjectiv(rew);
+				}
+
+				else if(line.startsWith("from")) {
+					current.setQuestGiver(line.split(":")[1]);
+				}
+
+				else if(line.startsWith("to")) {
+					current.setQuestRewarder(line.split(":")[1]);
+				}
+
+				else if(line.startsWith("description")) {
+					current.setDescr(line.split(":")[1]);
+				}
+
+				line = r.readLine();
+			}
+
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+
+		if(true) return;
 
 		File f = new File("dialogue/test.diag");
 		

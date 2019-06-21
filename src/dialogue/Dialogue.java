@@ -1,3 +1,5 @@
+package dialogue;
+
 import script.Parser;
 import script.TagHandler;
 import script.Tree;

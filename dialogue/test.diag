@@ -12,7 +12,6 @@ $name:Ich bin hier der Chef. Klaus mein Name.[tag; followUP; §Start]
 $name:Hier ist er doch.
 Tom:Hi[tag; followUP; §Start]
 
-
 §End
 $name:Ok, bis spaeter.
 Tom:Tschau[tag; condition; #tomFound]
