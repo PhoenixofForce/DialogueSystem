@@ -95,13 +95,34 @@ public class Main {
 				line = r.readLine();
 			}
 
+			current.opt();
+			questList.put(current.getName(), current);
 
+			r.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
 
+		Quest quest = questList.get("Der Große Test");
+		quest.setState(Quest.QuestState.ACTIV);
+		System.out.println(quest.isFinishable(th));
+		th.setValue("item_coal", 10);
+		System.out.println(quest.isFinishable(th));
+		quest.finish(th);
+		System.out.println(th.getInt("item_coal"));
+		System.out.println(th.getInt("Gold"));
+		System.out.println(th.getInt("EXP"));
+
+
+
+
 		if(true) return;
+
+
+
+
+
 
 		File f = new File("dialogue/test.diag");
 		
@@ -202,7 +223,8 @@ public class Main {
 				
 				line = r.readLine();
 			}
-			
+
+			current.opt();
 			dialogueTree.put(name, current);
 			r.close();
 		} catch (IOException e) {

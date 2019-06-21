@@ -1,5 +1,6 @@
 package quest;
 
+import script.Parser;
 import script.TagHandler;
 
 import java.util.ArrayList;
@@ -48,12 +49,20 @@ public class Quest {
 			state = QuestState.FINISHED;
 
 			for(Reward r: rewards) r.get(th);
+			for(Objectiv o: objectivs) Parser.loadScript(Parser.COMMAND, "#" + o.getSpec() + "=(#" + o.getSpec() + "-" + o.getCount()+ ");").get(th);
 
 			return true;
 		}
 
 		return false;
 	}
+
+
+	//TESTONLY
+	public void setState(QuestState state) {
+		this.state = state;
+	}
+
 
 	public String getName() {
 		return name;

@@ -32,9 +32,11 @@ public class Objectiv {
 
 	public void setSpec(String spec) {
 		this.spec = spec;
+		achieved = Parser.loadScript(Parser.BOOLEAN, "#" + spec + ">=" + oCount);
 	}
 
 	public void setCount(int oCount) {
 		this.oCount = oCount;
+		achieved = Parser.loadScript(Parser.BOOLEAN, "#" + spec + ">=" + oCount);
 	}
 }

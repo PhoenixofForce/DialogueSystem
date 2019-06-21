@@ -14,7 +14,8 @@ public class Reward {
 	}
 
 	public void get(TagHandler th) {
-		Parser.loadScript(Parser.COMMAND, "#" + spec + "=#" + spec + "+" + count + ";").get(th);
+		String line = "#" + spec + "=(#" + spec + "+" + count + ");";
+		Parser.loadScript(Parser.COMMAND, line).get(th);
 	}
 
 	public void setSpec(String spec) {
