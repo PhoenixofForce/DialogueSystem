@@ -1,7 +1,7 @@
 package quest;
 
-import script.Parser;
 import script.TagHandler;
+import script.Tree;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,15 +13,13 @@ public class Quest {
 
 	private QuestState state;
 
-	private String questGiver, questRewarder;
-	private List<Objectiv> objectivs;
-	private List<Reward> rewards;
+	private List<Tree> objectivs;
+	private Tree reward;
 
 	private String descr;
 
 	public Quest(int id, String name) {
 		this.objectivs = new ArrayList<>();
-		rewards = new ArrayList<>();
 
 		this.id = id;
 		this.name = name;
@@ -31,14 +29,30 @@ public class Quest {
 
 	public void opt() {
 		((ArrayList) objectivs).trimToSize();
-		((ArrayList) rewards).trimToSize();
+	}
+
+	public boolean isActivateable() {
+		return state == QuestState.UNACTIV;
+	}
+
+	public boolean activate(TagHandler th) {
+		if(isActivateable()) {
+			state = QuestState.ACTIV;
+			th.setValue("quest" + id, 1);
+
+			System.out.println("Quest angenommen: " + name);
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public boolean isFinishable(TagHandler th) {
 		if(state != QuestState.ACTIV) return false;
 
-		for(Objectiv o: objectivs) {
-			if(!o.achieved(th)) return false;
+		for(Tree o: objectivs) {
+			if(!(boolean) o.get(th)) return false;
 		}
 
 		return true;
@@ -48,8 +62,10 @@ public class Quest {
 		if(isFinishable(th)) {
 			state = QuestState.FINISHED;
 
-			for(Reward r: rewards) r.get(th);
-			for(Objectiv o: objectivs) Parser.loadScript(Parser.COMMAND, "#" + o.getSpec() + "=(#" + o.getSpec() + "-" + o.getCount()+ ");").get(th);
+			System.out.println("Quest beendet: " + name);
+
+			th.setValue("quest" + id, 2);
+			reward.get(th);
 
 			return true;
 		}
@@ -57,59 +73,20 @@ public class Quest {
 		return false;
 	}
 
-
-	//TESTONLY
-	public void setState(QuestState state) {
-		this.state = state;
+	public void setReward(Tree t) {
+		this.reward = t;
 	}
 
+	public void addObjectiv(Tree o) {
+		this.objectivs.add(o);
+	}
 
 	public String getName() {
 		return name;
 	}
 
-	public int getId() {
+	public int getID() {
 		return id;
-	}
-
-	public QuestState getState() {
-		return state;
-	}
-
-	public String getQuestGiver() {
-		return questGiver;
-	}
-
-	public void setQuestGiver(String questGiver) {
-		this.questGiver = questGiver;
-	}
-
-	public String getQuestRewarder() {
-		return questRewarder;
-	}
-
-	public Reward getReward(int i) {
-		return i < rewards.size()? rewards.get(i): null;
-	}
-
-	public void addReward(Reward r) {
-		rewards.add(r);
-	}
-
-	public Objectiv getObjectiv(int i) {
-		return i < objectivs.size()? objectivs.get(i): null;
-	}
-
-	public void addObjectiv(Objectiv o) {
-		objectivs.add(o);
-	}
-
-	public void setQuestRewarder(String questRewarder) {
-		this.questRewarder = questRewarder;
-	}
-
-	public String getDescr() {
-		return descr;
 	}
 
 	public void setDescr(String descr) {
@@ -117,6 +94,6 @@ public class Quest {
 	}
 
 	public enum QuestState {
-		ACTIV, UNACTIV, FAILED, FINISHED;
+		ACTIV, UNACTIV, FAILED, FINISHED;		//1 - 0 - -1 - 2
 	}
 }

@@ -1,11 +1,14 @@
 package dialogue;
 
+import quest.Quest;
 import script.Parser;
 import script.TagHandler;
 import script.Tree;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Dialogue {
 
@@ -37,27 +40,31 @@ public class Dialogue {
 	/**
 	 * a==null returns (unevaluated, first) followUp tag of NPC dialogue 
 	 * 
-	 * @param a
+	 * @param answerIndex
 	 * @return
 	 */
-	public String getFollowUp(TagHandler th, Text a) {
-		if(a != null && a.hasTag("followUP")) {
-			if(a.hasTag("onSpeak")) {
-				Tree tree = Parser.loadScript(Parser.COMMAND_BLOCK, a.getTagContent("onSpeak"));
+	public String getFollowUp(TagHandler th, int answerIndex) {
+
+		List<Text> filtered = playerDialogue.stream().filter(t -> speakable(t, th)).collect(Collectors.toList());
+		if(answerIndex >= 0 && filtered.get(answerIndex).hasTag("followUP")) {
+
+			if(filtered.get(answerIndex).hasTag("onSpeak")) {
+				Tree tree = Parser.loadScript(Parser.COMMAND_BLOCK, filtered.get(answerIndex).getTagContent("onSpeak"));
 				tree.get(th);
 			}
 
-			return a.getTagContent("followUP");
+			return filtered.get(answerIndex).getTagContent("followUP");
 		}
-		
-		for(int i = 0; i < npcDialogue.size(); i++) {
-			if(npcDialogue.get(i).hasTag("followUP")) return npcDialogue.get(i).getTagContent("followUP");
+
+		filtered = npcDialogue.stream().filter(t -> speakable(t, th)).collect(Collectors.toList());
+		for(int i = 0; i < filtered.size(); i++) {
+			if(filtered.get(i).hasTag("followUP")) return npcDialogue.get(i).getTagContent("followUP");
 		}
 		
 		return null;
 	}
 
-	public String buildText(TagHandler th) {
+	public String buildText(TagHandler th, Map<Integer, Quest> quests) {
 		String out = "";
 
 		for(int i = 0; i < npcDialogue.size(); i++) {
@@ -74,6 +81,9 @@ public class Dialogue {
 				tree.get(th);
 			}
 
+			if(t.hasTag("startQuest")) quests.get(Integer.parseInt(t.getTagContent("startQuest"))).activate(th);
+			if(t.hasTag("finishQuest")) quests.get(Integer.parseInt(t.getTagContent("finishQuest"))).finish(th);
+
 			String name = t.getSpeaker();
 			if(name.startsWith("$")) name = th.getString(name.substring(1));
 
@@ -82,8 +92,9 @@ public class Dialogue {
 			out += "[" + name + "] >> " + message + "\n";
 		}
 
-		for(int i = 0; i < playerDialogue.size(); i++) {
-			Text t = playerDialogue.get(i);
+		List<Text> filtered = playerDialogue.stream().filter(t -> speakable(t, th)).collect(Collectors.toList());
+		for(int i = 0; i < filtered.size(); i++) {
+			Text t = filtered.get(i);
 
 			if(t.hasTag("condition")) {
 				Tree tree = Parser.loadScript(Parser.BOOLEAN, t.getTagContent("condition"));
@@ -111,7 +122,21 @@ public class Dialogue {
 		}
 		return out;
 	}
-	
+
+
+	private boolean speakable(Text t, TagHandler th) {
+		if(t.hasTag("condition")) {
+			Tree tree = Parser.loadScript(Parser.BOOLEAN, t.getTagContent("condition"));
+
+			return (boolean) tree.get(th);
+		}
+
+		return true;
+	}
+
+
+
+
 	@Override
 	public boolean equals(Object b) {
 		if(b instanceof Dialogue) {

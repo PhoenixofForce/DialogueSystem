@@ -2,16 +2,28 @@
 §Start
 $name:Hi.
 >Wer bist du?[tag; followUP; §Name][tag; onSpeak; $name="Klaus";]
->Wo Tom ist?[tag; followUP; §A2][tag; onSpeak; #tomFound=1;]
+>Kann ich was fuer dich tun?[tag; followUP; §A2]
+>Wegen der Quest...[tag; followUP; §Quest][tag; condition; #quest1==1]
 >Bye[tag; followUP; §End]
 
 §Name
 $name:Ich bin hier der Chef. Klaus mein Name.[tag; followUP; §Start]
 
 §A2
-$name:Hier ist er doch.
-Tom:Hi[tag; followUP; §Start]
+$name:Momentan nicht, ich kenne dich doch gar nicht.[tag; condition; !($name=="Klaus")][tag; followUP; §Start]
+$name:Nein, aber spaeter vielleicht.[tag; condition; ($name=="Klaus" && !(#quest1 == 0))][tag; followUP; §Start]
+$name:Ja, natuerlich ich brauche 5 Kohle, bringe mir welche.[tag; condition; ($name=="Klaus" && #quest1 == 0)][tag; followUP; §Start][tag; startQuest; 1]
+
+§Quest
+>Wo bekomme ich Kohle her?[tag; followUP; §Kohle][tag; condition; #item_coal<5]
+>Hier hast du deine Kohle![tag; followUP; §QuestComplete][tag; condition; #item_coal>=5]
+>[Zurueck][tag; followUP; §Start]
+
+§Kohle
+#name:Hier hast du eine Kohle.[tag; onSpeak; #item_coal = (#item_coal+1);][tag; followUP; §Quest]
+
+§QuestComplete
+#name:Vielen Dank. Hier 20 Gold fuer dich.[tag; finishQuest; 1][tag; followUP; §Start]
 
 §End
 $name:Ok, bis spaeter.
-Tom:Tschau[tag; condition; #tomFound]

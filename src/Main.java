@@ -1,8 +1,6 @@
 import dialogue.Dialogue;
 import dialogue.Text;
-import quest.Objectiv;
 import quest.Quest;
-import quest.Reward;
 import script.Parser;
 import script.TagHandler;
 
@@ -22,7 +20,7 @@ public class Main {
 		TagHandler th = new TagHandler();
 
 		File q = new File("dialogue/test.quest");
-		Map<String, Quest> questList = new HashMap<>();
+		Map<Integer, Quest> questList = new HashMap<>();
 		try {
 			BufferedReader r = new BufferedReader(new FileReader(q));
 			String line = r.readLine();
@@ -34,59 +32,22 @@ public class Main {
 				if(line.startsWith(PARAGRAPH)) {
 					if(current != null) {
 						current.opt();
-						questList.put(current.getName(), current);
+						questList.put(current.getID(), current);
 					}
 
 					current = new Quest(Integer.parseInt(line.split("-")[0].substring(1)), line.split("-")[1]);
 				}
 
-				else if(line.startsWith("rewardCount")) {
-					Reward rew = current.getReward(Integer.parseInt(line.split(":")[0].substring(11)));
 
-					boolean isNew = rew == null;
-					if(isNew) rew = new Reward("", 0);
+				else if(line.startsWith(TAG_START_STRING)) {
+					String tagType = line.split(";")[1].trim();
+					String tagContent = line.substring(line.indexOf(tagType) + tagType.length() + 1);
+					tagContent = tagContent.substring(0, tagContent.length()-1).trim();
 
-					rew.setCount(Integer.parseInt(line.split(":")[1]));
-					if(isNew) current.addReward(rew);
+					if(tagType.equalsIgnoreCase("objectiv")) current.addObjectiv(Parser.loadScript(Parser.BOOLEAN, tagContent));
+					else if(tagType.equalsIgnoreCase("reward")) current.setReward(Parser.loadScript(Parser.COMMAND_BLOCK, tagContent));
 				}
 
-				else if(line.startsWith("reward")) {
-					Reward rew = current.getReward(Integer.parseInt(line.split(":")[0].substring(6)));
-
-					boolean isNew = rew == null;
-					if(isNew) rew = new Reward("", 0);
-
-					rew.setSpec(line.split(":")[1]);
-					if(isNew) current.addReward(rew);
-				}
-
-				else if(line.startsWith("objectivCount")) {
-					Objectiv rew = current.getObjectiv(Integer.parseInt(line.split(":")[0].substring(13)));
-
-					boolean isNew = rew == null;
-					if(isNew) rew = new Objectiv("", 0);
-
-					rew.setCount(Integer.parseInt(line.split(":")[1]));
-					if(isNew) current.addObjectiv(rew);
-				}
-
-				else if(line.startsWith("objectiv")) {
-					Objectiv rew = current.getObjectiv(Integer.parseInt(line.split(":")[0].substring(8)));
-
-					boolean isNew = rew == null;
-					if(isNew) rew = new Objectiv("", 0);
-
-					rew.setSpec(line.split(":")[1]);
-					if(isNew) current.addObjectiv(rew);
-				}
-
-				else if(line.startsWith("from")) {
-					current.setQuestGiver(line.split(":")[1]);
-				}
-
-				else if(line.startsWith("to")) {
-					current.setQuestRewarder(line.split(":")[1]);
-				}
 
 				else if(line.startsWith("description")) {
 					current.setDescr(line.split(":")[1]);
@@ -96,7 +57,7 @@ public class Main {
 			}
 
 			current.opt();
-			questList.put(current.getName(), current);
+			questList.put(current.getID(), current);
 
 			r.close();
 		} catch (IOException e) {
@@ -104,20 +65,9 @@ public class Main {
 		}
 
 
-		Quest quest = questList.get("Der Große Test");
-		quest.setState(Quest.QuestState.ACTIV);
-		System.out.println(quest.isFinishable(th));
-		th.setValue("item_coal", 10);
-		System.out.println(quest.isFinishable(th));
-		quest.finish(th);
-		System.out.println(th.getInt("item_coal"));
-		System.out.println(th.getInt("Gold"));
-		System.out.println(th.getInt("EXP"));
 
 
-
-
-		if(true) return;
+		//if(true) return;
 
 
 
@@ -242,18 +192,18 @@ public class Main {
 
 		while(d != null) {
 
-			System.out.println(d.buildText(th));	//PRINT DIALOGUE AND POSSIBLE ANSWERS
+			System.out.println(d.buildText(th, questList));	//PRINT DIALOGUE AND POSSIBLE ANSWERS
 			if(d.getAnswers().size() == 0) {
 
 				//JUMP TO NEXT D
-				String st = d.getFollowUp(th, null);
+				String st = d.getFollowUp(th, -1);
 				d = dialogueTree.get(st);
 				continue;
 			}
 
 			//DO ANSWER
 			int i = s.nextInt();
-			d = dialogueTree.get(d.getFollowUp(th, d.getAnswers().get(i)));
+			d = dialogueTree.get(d.getFollowUp(th, i));
 		}
 
 		System.out.println("[Der Dialog ist vorbei]");
